@@ -6,15 +6,12 @@
 
 ;;; Code:
 
-(require 'ert)
-(require 'ert-bdd)
-
 (describe "describe"
   (it "should create tests with the description as prefix and name as suffix"
     (should
      (seq-contains (seq-filter
                     (lambda (elt) (and (symbolp elt) (ert-test-boundp elt))) obarray)
-                   'describe-should-create-tests-with-the-description-as-prefix-and-name-as-suffix
+                   'describe*should-create-tests-with-the-description-as-prefix-and-name-as-suffix
                    )))
 
   (describe "when nested"
@@ -22,5 +19,5 @@
       (should
        (seq-contains (seq-filter
                       (lambda (elt) (and (symbolp elt) (ert-test-boundp elt))) obarray)
-                     'describe-when-nested-should-include-nested-descriptions)))))
+                     'describe*when-nested*should-include-nested-descriptions)))))
 

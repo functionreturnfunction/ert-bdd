@@ -30,12 +30,17 @@
 
 (defvar ert-bdd-description-stack nil)
 
-(defun ert-bdd-make-fn-desc (test)
-  (string-join (reverse (cons test ert-bdd-description-stack)) " "))
+(defun ert-bdd-build-description-stack (test sep)
+  (string-join (reverse (cons test ert-bdd-description-stack)) sep))
 
-(defun ert-bdd-make-fn-name (desc)
+(defun ert-bdd-make-fn-desc (test)
+  (ert-bdd-build-description-stack test " "))
+
+(defun ert-bdd-make-fn-name (test)
   (intern
-   (replace-regexp-in-string (regexp-quote " ") "-" desc)))
+   (replace-regexp-in-string
+    (regexp-quote " ") "-"
+    (ert-bdd-build-description-stack test "*"))))
 
 (defmacro describe (description &rest body)
   (declare (indent 1))
@@ -48,8 +53,9 @@
 
 (defmacro it (description &rest body)
   (declare (indent 1))
-  (let ((desc (ert-bdd-make-fn-desc description)))
-    `(ert-deftest ,(ert-bdd-make-fn-name desc) ()
+  (let ((desc (ert-bdd-make-fn-desc description))
+        (name (ert-bdd-make-fn-name description)))
+    `(ert-deftest ,name ()
        ,desc ,@body)))
 
 (provide 'ert-bdd)
