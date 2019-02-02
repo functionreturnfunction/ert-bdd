@@ -1,4 +1,4 @@
-* bdd-ert
+* bdd-ert [[https://travis-ci.org/functionreturnfunction/ert-bdd][https://travis-ci.org/functionreturnfunction/ert-bdd.png?branch=master]] [[https://coveralls.io/github/functionreturnfunction/ert-bdd][https://coveralls.io/repos/functionreturnfunction/ert-bdd/badge.svg?branch=master&service=github]]
   BDD macros for `ert'.
 
 ** Motivation

@@ -5,7 +5,7 @@
 ;; Author:  Jason Duncan <jasond496@msn.com>
 ;; Version: 0.0 alpha1
 ;; URL: https://github.com/functionreturnfunction/ert-bdd
-;; Package-Requires:
+;; Package-Requires: ((emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -36,12 +36,15 @@
     (mapconcat #'identity list sep)))
 
 (defun ert-bdd-build-description-stack (test sep)
+  "Build a description for the current TEST using SEP to join the description stack."
   (ert-bdd-string-join (reverse (cons test ert-bdd-description-stack)) sep))
 
 (defun ert-bdd-make-fn-desc (test)
+  "Build a description for TEST using the current description stack."
   (ert-bdd-build-description-stack test " "))
 
 (defun ert-bdd-make-fn-name (test)
+  "Build a name for TEST using the current description stack."
   (intern
    (replace-regexp-in-string
     (regexp-quote " ") "-"
