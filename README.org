@@ -1,0 +1,27 @@
+* bdd-ert
+  BDD macros for `ert'.
+
+** Motivation
+   [[https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/ert.el][ert]] works well, is built-in to emacs, and can be run in a CI context with
+   relative ease.  It's also inexpressive compared to a BDD framework, and lacks
+   many features including setup/teardown, mocking, and comprehensive assertions.
+
+   [[https://github.com/jorgenschaefer/emacs-buttercup][Buttercup]] implements a full BDD framework based on [[https://jasmine.github.io/edge/introduction.html][Jasmine]] with all the
+   trimmings, but it's completely standalone with an external dependency on Cask
+   to run its tests.
+
+   [[https://github.com/emacsorphanage/ert-expectations/blob/master/ert-expectations.el][ert-expectations]] along with [[https://github.com/rejeep/el-mock.el][el-mock]] provide a bit more of a concise BDD-like
+   experience on top of `ert', but it's a bit harder to work with, is missing
+   some features, and the `desc' function along with how generated `ert' tests
+   are named leave a bit to be desired.
+
+   I aim to create a feature-rich BDD framework on top `ert' with a familiar
+   syntax allowing the user to run their tests in emacs with full debugging
+   support, and no other dependencies (besides any which this library may
+   consume ;-)).
+
+** What's Implemented
+   `describe' and `if' both work.  The description for both should contain no
+   characters which would be illegal in an emacs lisp symbol other than space,
+   and currently spaces are replaced with hypens when `ert' test name is
+   generated.  These can be nested as one would expect.
