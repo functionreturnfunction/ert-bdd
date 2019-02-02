@@ -6,18 +6,16 @@
 
 ;;; Code:
 
+(defun is-testp (thing)
+  (and (symbolp thing) (ert-test-boundp thing)))
+
+(defun ert-testp (symbol)
+  (seq-contains (seq-filter #'is-testp obarray) symbol))
+
 (describe "describe"
-  (it "should create tests with the description as prefix and name as suffix"
-    (should
-     (seq-contains (seq-filter
-                    (lambda (elt) (and (symbolp elt) (ert-test-boundp elt))) obarray)
-                   'describe*should-create-tests-with-the-description-as-prefix-and-name-as-suffix
-                   )))
+  (it "should create tests with description as prefix and name as suffix"
+    (should (ert-testp 'describe*should-create-tests-with-description-as-prefix-and-name-as-suffix)))
 
   (describe "when nested"
     (it "should include nested descriptions"
-      (should
-       (seq-contains (seq-filter
-                      (lambda (elt) (and (symbolp elt) (ert-test-boundp elt))) obarray)
-                     'describe*when-nested*should-include-nested-descriptions)))))
-
+      (should (ert-testp 'describe*when-nested*should-include-nested-descriptions)))))

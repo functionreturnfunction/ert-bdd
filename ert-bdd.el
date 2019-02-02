@@ -30,8 +30,13 @@
 
 (defvar ert-bdd-description-stack nil)
 
+(if (functionp 'string-join)
+    (defalias 'ert-bdd-string-join 'string-join)
+  (defun ert-bdd-string-join (list sep)
+    (mapconcat #'identity list sep)))
+
 (defun ert-bdd-build-description-stack (test sep)
-  (string-join (reverse (cons test ert-bdd-description-stack)) sep))
+  (ert-bdd-string-join (reverse (cons test ert-bdd-description-stack)) sep))
 
 (defun ert-bdd-make-fn-desc (test)
   (ert-bdd-build-description-stack test " "))
