@@ -1,6 +1,6 @@
 (source melpa)
 
-(package-file "dashboard-project-status.el")
+(package-file "ert-bdd.el")
 
 (development
  (depends-on "dash")
