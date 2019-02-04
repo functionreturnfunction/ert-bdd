@@ -29,15 +29,38 @@
 (require 'ert)
 
 (defvar ert-bdd-description-stack nil)
+(defvar ert-bdd-before-stack nil)
+(defvar ert-bdd-after-stack nil)
+
+(progn
+  (setq ert-bdd-description-stack nil)
+  (setq ert-bdd-before-stack nil)
+  (setq ert-bdd-after-stack nil))
 
 (if (functionp 'string-join)
     (defalias 'ert-bdd-string-join 'string-join)
   (defun ert-bdd-string-join (list sep)
     (mapconcat #'identity list sep)))
 
+(defun ert-bdd-add-to-setup-stack (stack &rest body)
+  (set stack
+       (append
+        (symbol-value stack)
+        `((,(or (car (symbol-value stack)) "global") ,@body))))
+  '(ignore))
+
+(defun ert-bdd-remove-from-setup-stack (stack description)
+  (set stack
+       (remove* description (symbol-value stack) :test 'equal :key 'car)))
+
 (defun ert-bdd-build-description-stack (test sep)
   "Build a description for the current TEST using SEP to join the description stack."
   (ert-bdd-string-join (reverse (cons test ert-bdd-description-stack)) sep))
+
+(defun ert-bdd-build-test-body (test)
+  (append (mapcar #'cadr ert-bdd-before-stack)
+          test
+          (mapcar #'cadr ert-bdd-after-stack)))
 
 (defun ert-bdd-make-fn-desc (test)
   "Build a description for TEST using the current description stack."
@@ -51,20 +74,34 @@
     (ert-bdd-build-description-stack test "*"))))
 
 (defmacro describe (description &rest body)
-  (declare (indent 1))
+  (declare (indent 1)
+           (debug (&define sexp def-body)))
   (setq ert-bdd-description-stack
         (cons description ert-bdd-description-stack))
   `(progn
      ,@body
      (setq ert-bdd-description-stack
-           (cdr ert-bdd-description-stack))))
+           (cdr ert-bdd-description-stack))
+     (ert-bdd-remove-from-setup-stack 'ert-bdd-before-stack ,description)
+     (ert-bdd-remove-from-setup-stack 'ert-bdd-after-stack ,description)))
 
 (defmacro it (description &rest body)
-  (declare (indent 1))
+  (declare (indent 1)
+           (debug (&define sexp def-body)))
   (let ((desc (ert-bdd-make-fn-desc description))
         (name (ert-bdd-make-fn-name description)))
+    ;; `((,name ,desc ,@(ert-bdd-build-test-body body)))))
     `(ert-deftest ,name ()
-       ,desc ,@body)))
+       ,desc ,@(ert-bdd-build-test-body body))))
+
+(defmacro before (&rest body)
+  (declare (debug (&define def-body)))
+  ;; TODO needs to build key from whole description stack, not just most recent
+  (apply #'ert-bdd-add-to-setup-stack `(ert-bdd-before-stack ,@body)))
+
+(defmacro after (&rest body)
+  (declare (debug (&define def-body)))
+  (apply #'ert-bdd-add-to-setup-stack `(ert-bdd-after-stack ,@body)))
 
 (provide 'ert-bdd)
 ;;; ert-bdd.el ends here
