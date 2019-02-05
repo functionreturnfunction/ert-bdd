@@ -54,6 +54,17 @@
   (set stack
        (remove* description (symbol-value stack) :test 'equal :key 'car)))
 
+(defun ert-bdd-build-setup-stack (stack)
+  (let (part acc ret)
+    (dolist (part ert-bdd-description-stack ret)
+      (setq acc (if acc (concat acc "*" part) part))
+      (let ((cur (mapcar
+                  #'cadr
+                  (remove-if-not
+                   (lambda (s) (string-equal (car s) acc)) stack))))
+        (when cur
+          (setq ret (append ret cur)))))))
+
 (defun ert-bdd-build-description-stack (test sep)
   "Build a description for the current TEST using SEP to join the description stack."
   (ert-bdd-string-join (reverse (cons test ert-bdd-description-stack)) sep))

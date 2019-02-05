@@ -6,12 +6,42 @@
 
 ;;; Code:
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HELPER FUNCTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun is-testp (thing)
   (and (symbolp thing) (get thing 'ert--test)))
 
 (defun get-ert-tests ()
   (seq-filter #'is-testp obarray))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UNIT TESTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(describe "ert-bdd-build-test-body"
+  (it "builds the test with before and after statements in the proper order"
+    (let* ((stack '(("foo" (foo))
+                    ("foo*bar" (bar))
+                    ("foo*bar*baz" (baz))))
+           (ert-bdd-before-stack stack)
+           (ert-bdd-after-stack stack)
+           (ert-bdd-description-stack '("foo" "bar" "baz")))
+      (should (equal '((foo) (bar) (baz) (test) (baz) (bar) (foo))
+                     (ert-bdd-build-test-body '((test))))))))
+
+(describe "ert-bdd-build-setup-stack"
+  (it "builds the setup stack for relevant descriptions in the proper order"
+    (let* ((stack '(("foo*bar" (bar))
+                    ("foo" (foo))
+                    ("foo*bar*baz" (baz))
+                    ("not*releveant" (yuck))))
+           (ert-bdd-description-stack '("foo" "bar" "baz"))
+           (result (mapcar #'cdr (ert-bdd-build-setup-stack stack))))
+      (should (equal '((foo) (bar) (baz)) result)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;API TESTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (describe "describe"
   (it "should create tests with description as prefix and name as suffix"
     (should (seq-contains (get-ert-tests)
