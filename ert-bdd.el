@@ -35,10 +35,31 @@
 (defvar ert-bdd-before-stack nil)
 (defvar ert-bdd-after-stack nil)
 
+(defvar ert-bdd-matcher-alist nil)
+
 (progn
   (setq ert-bdd-description-stack nil)
   (setq ert-bdd-before-stack nil)
-  (setq ert-bdd-after-stack nil))
+  (setq ert-bdd-after-stack nil)
+  (setq ert-bdd-matcher-alist nil))
+
+(defmacro ert-bdd-add-unary-matcher (keyword &rest body)
+  `(setq
+    ert-bdd-matcher-alist
+    (cons
+     (list ,keyword '(lambda (it) (should ,@body)))
+     ert-bdd-matcher-alist)))
+
+(defmacro ert-bdd-add-binary-matcher (keyword &rest body)
+  `(setq
+    ert-bdd-matcher-alist
+    (cons
+     (list ,keyword '(lambda (expected actual) (should ,@body)))
+     ert-bdd-matcher-alist)))
+
+(ert-bdd-add-unary-matcher  :to-be-truthy (identity it))
+(ert-bdd-add-binary-matcher :to-be        (eq expected actual))
+(ert-bdd-add-binary-matcher :to-equal     (equal expected actual))
 
 (if (functionp 'string-join)
     (defalias 'ert-bdd-string-join 'string-join)
@@ -95,6 +116,14 @@
     (regexp-quote " ") "-"
     (ert-bdd-build-test-description test ert-bdd-description-separator))))
 
+(defun ert-bdd-lookup-matcher (matcher)
+  (or (cadr (assoc matcher ert-bdd-matcher-alist))
+      (error "Matcher %s not defined" (symbol-name matcher))))
+
+(defun ert-bdd-expect (arg matcher args)
+  (let ((fun (ert-bdd-lookup-matcher matcher)))
+    `(funcall ,fun ,@(cons arg args))))
+
 (defmacro describe (description &rest body)
   "Describe a test suite.
 
@@ -120,7 +149,6 @@ including one or more calls to `should'."
            (debug (&define sexp def-body)))
   (let ((desc (ert-bdd-make-fn-desc description))
         (name (ert-bdd-make-fn-name description)))
-    ;; `((,name ,desc ,@(ert-bdd-build-test-body body)))))
     `(ert-deftest ,name ()
        ,desc ,@(ert-bdd-build-test-body body))))
 
@@ -133,6 +161,9 @@ including one or more calls to `should'."
   "Run BODY after each spec in the current suite."
   (declare (debug (&define def-body)))
   (apply #'ert-bdd-add-to-setup-stack `(ert-bdd-after-stack ,@body)))
+
+(defmacro expect (arg &optional matcher &rest args)
+  (ert-bdd-expect arg (or matcher :to-be-truthy) args))
 
 (provide 'ert-bdd)
 ;;; ert-bdd.el ends here
