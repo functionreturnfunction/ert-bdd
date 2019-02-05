@@ -161,39 +161,32 @@ including one or more calls to `should'."
 (defmacro ert-bdd-add-unary-matcher (keyword func)
   `(ert-bdd-add-matcher ,keyword
      '(lambda (it &optional inverse)
-        (if inverse (should (not (,func it)))
+        (if inverse (should-not (,func it))
           (should (,func it))))))
 
-(defmacro ert-bdd-add-binary-matcher (keyword func)
+(defmacro ert-bdd-add-binary-matcher (keyword func &optional swap)
   `(ert-bdd-add-matcher ,keyword
      '(lambda (a b &optional inverse)
-        (if inverse (should (not (,func a b)))
+        ,(if swap '(setq a (prog1 b (setq b a))))
+        (if inverse (should-not (,func a b))
           (should (,func a b))))))
 
 (ert-bdd-add-matcher :not
-  (lambda (obj matcher &rest args)
-    (let ((func (ert-bdd-lookup-matcher matcher)))
-      (apply func (append (list obj) args (list t))))))
+                     (lambda (obj matcher &rest args)
+                       (let ((func (ert-bdd-lookup-matcher matcher)))
+                         (apply func (append (list obj) args (list t))))))
 
 (ert-bdd-add-unary-matcher  :to-be-truthy       identity)
 (ert-bdd-add-binary-matcher :to-be              eq)
 (ert-bdd-add-binary-matcher :to-equal           equal)
 (ert-bdd-add-binary-matcher :to-be-less-than    <)
 (ert-bdd-add-binary-matcher :to-be-greater-than >)
-
-(ert-bdd-add-matcher :to-match
-  (lambda (str rgx &optional inverse)
-    (if inverse (should (not (string-match-p rgx str)))
-      (should (string-match-p rgx str)))))
-
-(ert-bdd-add-matcher :to-contain
-  (lambda (list element &optional inverse)
-    (if inverse (should (not (member element list)))
-      (should (member element list)))))
+(ert-bdd-add-binary-matcher :to-match           string-match-p t)
+(ert-bdd-add-binary-matcher :to-contain         member t)
 
 (ert-bdd-add-matcher :to-be-close-to
   (lambda (a b tolerance &optional inverse)
-    (if inverse (should (>= (abs (- a b)) tolerance))
+    (if inverse (should-not (< (abs (- a b)) tolerance))
       (should (< (abs (- a b)) tolerance)))))
 
 (provide 'ert-bdd)
