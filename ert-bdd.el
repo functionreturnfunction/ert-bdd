@@ -150,6 +150,11 @@ including one or more calls to `should'."
   (let ((func (ert-bdd-lookup-matcher matcher)))
     `(,func ,@(cons arg args))))
 
+(defun ert-bdd-have-same-items-p (a b)
+  (let ((exclusive-a (-difference a b))
+        (exclusive-b (-difference b a)))
+    (not (or exclusive-a exclusive-b))))
+
 (defmacro ert-bdd-add-matcher (keyword body)
   (declare (indent 1))
   `(setq
@@ -172,17 +177,18 @@ including one or more calls to `should'."
           (should (,func a b))))))
 
 (ert-bdd-add-matcher :not
-                     (lambda (obj matcher &rest args)
-                       (let ((func (ert-bdd-lookup-matcher matcher)))
-                         (apply func (append (list obj) args (list t))))))
+  (lambda (obj matcher &rest args)
+    (let ((func (ert-bdd-lookup-matcher matcher)))
+      (apply func (append (list obj) args (list t))))))
 
-(ert-bdd-add-unary-matcher  :to-be-truthy       identity)
-(ert-bdd-add-binary-matcher :to-be              eq)
-(ert-bdd-add-binary-matcher :to-equal           equal)
-(ert-bdd-add-binary-matcher :to-be-less-than    <)
-(ert-bdd-add-binary-matcher :to-be-greater-than >)
-(ert-bdd-add-binary-matcher :to-match           string-match-p t)
-(ert-bdd-add-binary-matcher :to-contain         member t)
+(ert-bdd-add-unary-matcher  :to-be-truthy          identity)
+(ert-bdd-add-binary-matcher :to-be                 eq)
+(ert-bdd-add-binary-matcher :to-equal              equal)
+(ert-bdd-add-binary-matcher :to-be-less-than       <)
+(ert-bdd-add-binary-matcher :to-be-greater-than    >)
+(ert-bdd-add-binary-matcher :to-have-same-items-as ert-bdd-have-same-items-p)
+(ert-bdd-add-binary-matcher :to-match              string-match-p t)
+(ert-bdd-add-binary-matcher :to-contain            member t)
 
 (ert-bdd-add-matcher :to-be-close-to
   (lambda (a b tolerance &optional inverse)
