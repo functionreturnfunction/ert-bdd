@@ -5,7 +5,7 @@
 ;; Author:  Jason Duncan <jasond496@msn.com>
 ;; Version: 0.0 alpha1
 ;; URL: https://github.com/functionreturnfunction/ert-bdd
-;; Package-Requires: ((emacs "24"))
+;; Package-Requires: ((emacs "24") (dash "2.15.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,7 +27,9 @@
 ;;; Code:
 
 (require 'ert)
-(require 'cl)
+(require 'dash)
+
+(defconst ert-bdd-description-separator "*")
 
 (defvar ert-bdd-description-stack nil)
 (defvar ert-bdd-before-stack nil)
@@ -47,43 +49,46 @@
   (set stack
        (append
         (symbol-value stack)
-        `((,(or (car (symbol-value stack)) "global") ,@body))))
+        `((,(ert-bdd-build-description-stack ert-bdd-description-separator) ,@body))))
   '(ignore))
 
 (defun ert-bdd-remove-from-setup-stack (stack description)
   (set stack
-       (remove* description (symbol-value stack) :test 'equal :key 'car)))
+       (--filter (string-equal description (car it)) (symbol-value stack))))
 
 (defun ert-bdd-build-setup-stack (stack)
   (let (part acc ret)
-    (dolist (part ert-bdd-description-stack ret)
-      (setq acc (if acc (concat acc "*" part) part))
+    (dolist (part (reverse ert-bdd-description-stack) ret)
+      (setq acc (if acc (concat acc ert-bdd-description-separator part) part))
       (let ((cur (mapcar
                   #'cadr
-                  (remove-if-not
-                   (lambda (s) (string-equal (car s) acc)) stack))))
+                  (--filter
+                   (string-equal (car it) acc) stack))))
         (when cur
           (setq ret (append ret cur)))))))
 
-(defun ert-bdd-build-description-stack (test sep)
+(defun ert-bdd-build-description-stack (sep)
+  (ert-bdd-string-join (reverse ert-bdd-description-stack) sep))
+
+(defun ert-bdd-build-test-description (test sep)
   "Build a description for the current TEST using SEP to join the description stack."
-  (ert-bdd-string-join (reverse (cons test ert-bdd-description-stack)) sep))
+  (ert-bdd-string-join `(,(ert-bdd-build-description-stack sep) ,test) sep))
 
 (defun ert-bdd-build-test-body (test)
-  (append (mapcar #'cadr ert-bdd-before-stack)
+  (append (ert-bdd-build-setup-stack ert-bdd-before-stack)
           test
-          (mapcar #'cadr ert-bdd-after-stack)))
+          (reverse (ert-bdd-build-setup-stack ert-bdd-after-stack))))
 
 (defun ert-bdd-make-fn-desc (test)
   "Build a description for TEST using the current description stack."
-  (ert-bdd-build-description-stack test " "))
+  (ert-bdd-build-test-description test " "))
 
 (defun ert-bdd-make-fn-name (test)
   "Build a name for TEST using the current description stack."
   (intern
    (replace-regexp-in-string
     (regexp-quote " ") "-"
-    (ert-bdd-build-description-stack test "*"))))
+    (ert-bdd-build-test-description test ert-bdd-description-separator))))
 
 (defmacro describe (description &rest body)
   (declare (indent 1)
