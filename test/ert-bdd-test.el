@@ -103,9 +103,8 @@
     (it "The :to-be matcher compares with `eq'"
       (let* ((a 12)
              (b a))
-        (should (eq a b))
-        ;; (expect a :not :to-be nil)))
-        ))
+        (expect a :to-be b)
+        (expect a :not :to-be nil)))
 
     (describe "The :to-equal matcher"
       (it "works for simple literals and variables"

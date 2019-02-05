@@ -43,24 +43,6 @@
   (setq ert-bdd-after-stack nil)
   (setq ert-bdd-matcher-alist nil))
 
-(defmacro ert-bdd-add-unary-matcher (keyword &rest body)
-  `(setq
-    ert-bdd-matcher-alist
-    (cons
-     (list ,keyword '(lambda (it) (should ,@body)))
-     ert-bdd-matcher-alist)))
-
-(defmacro ert-bdd-add-binary-matcher (keyword &rest body)
-  `(setq
-    ert-bdd-matcher-alist
-    (cons
-     (list ,keyword '(lambda (expected actual) (should ,@body)))
-     ert-bdd-matcher-alist)))
-
-(ert-bdd-add-unary-matcher  :to-be-truthy (identity it))
-(ert-bdd-add-binary-matcher :to-be        (eq expected actual))
-(ert-bdd-add-binary-matcher :to-equal     (equal expected actual))
-
 (if (functionp 'string-join)
     (defalias 'ert-bdd-string-join 'string-join)
   (defun ert-bdd-string-join (list sep)
@@ -116,14 +98,6 @@
     (regexp-quote " ") "-"
     (ert-bdd-build-test-description test ert-bdd-description-separator))))
 
-(defun ert-bdd-lookup-matcher (matcher)
-  (or (cadr (assoc matcher ert-bdd-matcher-alist))
-      (error "Matcher %s not defined" (symbol-name matcher))))
-
-(defun ert-bdd-expect (arg matcher args)
-  (let ((fun (ert-bdd-lookup-matcher matcher)))
-    `(funcall ,fun ,@(cons arg args))))
-
 (defmacro describe (description &rest body)
   "Describe a test suite.
 
@@ -164,6 +138,47 @@ including one or more calls to `should'."
 
 (defmacro expect (arg &optional matcher &rest args)
   (ert-bdd-expect arg (or matcher :to-be-truthy) args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;MATCHERS;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ert-bdd-lookup-matcher (matcher)
+  (or (cadr (assoc matcher ert-bdd-matcher-alist))
+      (error "Matcher %s not defined" (symbol-name matcher))))
+
+(defun ert-bdd-expect (arg matcher args)
+  (let ((func (ert-bdd-lookup-matcher matcher)))
+    `(,func ,@(cons arg args))))
+
+(defmacro ert-bdd-add-matcher (keyword body)
+  (declare (indent 1))
+  `(setq
+    ert-bdd-matcher-alist
+    (cons
+     (list ,keyword ,body)
+     ert-bdd-matcher-alist)))
+
+(defmacro ert-bdd-add-unary-matcher (keyword func)
+  `(ert-bdd-add-matcher ,keyword
+     '(lambda (it &optional inverse)
+        (if inverse (should (not (,func it)))
+          (should (,func it))))))
+
+(defmacro ert-bdd-add-binary-matcher (keyword func)
+  `(ert-bdd-add-matcher ,keyword
+     '(lambda (a b &optional inverse)
+        (if inverse (should (not (,func a b)))
+          (should (,func a b))))))
+
+(defun ert-bdd-not-matcher (obj matcher &rest args)
+  (let ((func (ert-bdd-lookup-matcher matcher)))
+    (apply func (append (list obj) args (list t)))))
+
+(ert-bdd-add-matcher :not 'ert-bdd-not-matcher)
+
+(ert-bdd-add-unary-matcher  :to-be-truthy identity)
+(ert-bdd-add-binary-matcher :to-be        eq)
+(ert-bdd-add-binary-matcher :to-equal     equal)
 
 (provide 'ert-bdd)
 ;;; ert-bdd.el ends here
