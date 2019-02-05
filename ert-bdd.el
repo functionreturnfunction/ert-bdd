@@ -170,15 +170,31 @@ including one or more calls to `should'."
         (if inverse (should (not (,func a b)))
           (should (,func a b))))))
 
-(defun ert-bdd-not-matcher (obj matcher &rest args)
-  (let ((func (ert-bdd-lookup-matcher matcher)))
-    (apply func (append (list obj) args (list t)))))
+(ert-bdd-add-matcher :not
+  (lambda (obj matcher &rest args)
+    (let ((func (ert-bdd-lookup-matcher matcher)))
+      (apply func (append (list obj) args (list t))))))
 
-(ert-bdd-add-matcher :not 'ert-bdd-not-matcher)
+(ert-bdd-add-unary-matcher  :to-be-truthy       identity)
+(ert-bdd-add-binary-matcher :to-be              eq)
+(ert-bdd-add-binary-matcher :to-equal           equal)
+(ert-bdd-add-binary-matcher :to-be-less-than    <)
+(ert-bdd-add-binary-matcher :to-be-greater-than >)
 
-(ert-bdd-add-unary-matcher  :to-be-truthy identity)
-(ert-bdd-add-binary-matcher :to-be        eq)
-(ert-bdd-add-binary-matcher :to-equal     equal)
+(ert-bdd-add-matcher :to-match
+  (lambda (str rgx &optional inverse)
+    (if inverse (should (not (string-match-p rgx str)))
+      (should (string-match-p rgx str)))))
+
+(ert-bdd-add-matcher :to-contain
+  (lambda (list element &optional inverse)
+    (if inverse (should (not (member element list)))
+      (should (member element list)))))
+
+(ert-bdd-add-matcher :to-be-close-to
+  (lambda (a b tolerance &optional inverse)
+    (if inverse (should (>= (abs (- a b)) tolerance))
+      (should (< (abs (- a b)) tolerance)))))
 
 (provide 'ert-bdd)
 ;;; ert-bdd.el ends here

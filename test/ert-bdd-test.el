@@ -115,54 +115,54 @@
         (let ((foo '((a . 12) (b . 34)))
               (bar '((a . 12) (b . 34))))
           (expect foo :to-equal bar))))
+
+    ;;   (it "The :to-have-same-items-as matcher compares two lists as sets"
+    ;;     (let ((first (list "a" "b" "c"))
+    ;;           (second (list "c" "a" "b"))
+    ;;           (third (list "a" "c" "d"))
+    ;;           (fourth (list "a" "b")))
+    ;;       (expect first :to-have-same-items-as second)
+    ;;       (expect second :to-have-same-items-as first)
+    ;;       (expect first :not :to-have-same-items-as third)
+    ;;       (expect third :not :to-have-same-items-as second)
+    ;;       (expect first :not :to-have-same-items-as fourth)
+    ;;       (expect fourth :not :to-have-same-items-as first)))
+
+    (it "The :to-match matcher is for regular expressions"
+      (let ((message "foo bar baz"))
+        (expect message :to-match "bar")
+        (expect message :to-match (rx "bar"))
+        (expect message :not :to-match "quux")))
+
+    (it "The :to-be-truthy matcher is for boolean casting testing"
+      (let (a
+            (foo "foo"))
+        (expect foo :to-be-truthy)
+        (expect a :not :to-be-truthy)))
+
+    (it "The :to-contain matcher is for finding an item in a list"
+      (let ((a '("foo" "bar" "baz")))
+        (expect a :to-contain "bar")
+        (expect a :not :to-contain "quux")))
+
+    (it "The :to-be-less-than matcher is for mathematical comparisons"
+      (let ((pi 3.1415926)
+            (e 2.78))
+        (expect e :to-be-less-than pi)
+        (expect pi :not :to-be-less-than e)))
+
+    (it "The :to-be-greater-than matcher is for mathematical comparisons"
+      (let ((pi 3.1415926)
+            (e 2.78))
+        (expect pi :to-be-greater-than e)
+        (expect e :not :to-be-greater-than pi)))
+
+    (it "The :to-be-close-to matcher is for precision math comparison"
+      (let ((pi 3.1415926)
+            (e 2.78))
+        (expect pi :to-be-close-to e 2)
+        (expect pi :not :to-be-close-to e 0)))
     ))
-
-;;   (it "The :to-have-same-items-as matcher compares two lists as sets"
-;;     (let ((first (list "a" "b" "c"))
-;;           (second (list "c" "a" "b"))
-;;           (third (list "a" "c" "d"))
-;;           (fourth (list "a" "b")))
-;;       (expect first :to-have-same-items-as second)
-;;       (expect second :to-have-same-items-as first)
-;;       (expect first :not :to-have-same-items-as third)
-;;       (expect third :not :to-have-same-items-as second)
-;;       (expect first :not :to-have-same-items-as fourth)
-;;       (expect fourth :not :to-have-same-items-as first)))
-
-;;   (it "The :to-match matcher is for regular expressions"
-;;     (let ((message "foo bar baz"))
-;;       (expect message :to-match "bar")
-;;       (expect message :to-match (rx "bar"))
-;;       (expect message :not :to-match "quux")))
-
-;;   (it "The :to-be-truthy matcher is for boolean casting testing"
-;;     (let (a
-;;           (foo "foo"))
-;;       (expect foo :to-be-truthy)
-;;       (expect a :not :to-be-truthy)))
-
-;;   (it "The :to-contain matcher is for finding an item in a list"
-;;     (let ((a '("foo" "bar" "baz")))
-;;       (expect a :to-contain "bar")
-;;       (expect a :not :to-contain "quux")))
-
-;;   (it "The :to-be-less-than matcher is for mathematical comparisons"
-;;     (let ((pi 3.1415926)
-;;           (e 2.78))
-;;       (expect e :to-be-less-than pi)
-;;       (expect pi :not :to-be-less-than e)))
-
-;;   (it "The :to-be-greater-than matcher is for mathematical comparisons"
-;;     (let ((pi 3.1415926)
-;;           (e 2.78))
-;;       (expect pi :to-be-greater-than e)
-;;       (expect e :not :to-be-greater-than pi)))
-
-;;   (it "The :to-be-close-to matcher is for precision math comparison"
-;;     (let ((pi 3.1415926)
-;;           (e 2.78))
-;;       (expect pi :not :to-be-close-to e 2)
-;;       (expect pi :to-be-close-to e 0)))
 
 ;;   (describe "The :to-throw matcher"
 ;;     (it "is for testing if an expression throws an exception"
