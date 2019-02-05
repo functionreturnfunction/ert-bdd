@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'ert)
+(require 'cl)
 
 (defvar ert-bdd-description-stack nil)
 (defvar ert-bdd-before-stack nil)
