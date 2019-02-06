@@ -163,32 +163,32 @@ including one or more calls to `should'."
      (list ,keyword ,body)
      ert-bdd-matcher-alist)))
 
-(defmacro ert-bdd-add-unary-matcher (keyword func)
-  `(ert-bdd-add-matcher ,keyword
-     '(lambda (it &optional inverse)
-        (if inverse (should-not (,func it))
-          (should (,func it))))))
-
-(defmacro ert-bdd-add-binary-matcher (keyword func &optional swap)
-  `(ert-bdd-add-matcher ,keyword
-     '(lambda (a b &optional inverse)
-        ,(if swap '(setq a (prog1 b (setq b a))))
-        (if inverse (should-not (,func a b))
-          (should (,func a b))))))
+(defmacro ert-bdd-add-n-fn-matcher (n keyword func &optional swap)
+  (let ((arg-list (let (ret)
+                    (dotimes (i n ret)
+                      (let ((char-sym (list (intern (format "%c" (+ 97 i))))))
+                        (setq ret (if ret (append ret char-sym) char-sym)))))))
+    `(ert-bdd-add-matcher ,keyword
+       '(lambda ,(append arg-list
+                         (list '&optional 'inverse))
+          ,(when (and (= 2 n) swap)
+             '(setq a (prog1 b (setq b a))))
+          (if inverse (should-not (,func ,@arg-list))
+            (should (,func ,@arg-list)))))))
 
 (ert-bdd-add-matcher :not
   (lambda (obj matcher &rest args)
     (let ((func (ert-bdd-lookup-matcher matcher)))
       (apply func (append (list obj) args (list t))))))
 
-(ert-bdd-add-unary-matcher  :to-be-truthy          identity)
-(ert-bdd-add-binary-matcher :to-be                 eq)
-(ert-bdd-add-binary-matcher :to-equal              equal)
-(ert-bdd-add-binary-matcher :to-be-less-than       <)
-(ert-bdd-add-binary-matcher :to-be-greater-than    >)
-(ert-bdd-add-binary-matcher :to-have-same-items-as ert-bdd-have-same-items-p)
-(ert-bdd-add-binary-matcher :to-match              string-match-p t)
-(ert-bdd-add-binary-matcher :to-contain            member t)
+(ert-bdd-add-n-fn-matcher 1 :to-be-truthy          identity)
+(ert-bdd-add-n-fn-matcher 2 :to-be                 eq)
+(ert-bdd-add-n-fn-matcher 2 :to-equal              equal)
+(ert-bdd-add-n-fn-matcher 2 :to-be-less-than       <)
+(ert-bdd-add-n-fn-matcher 2 :to-be-greater-than    >)
+(ert-bdd-add-n-fn-matcher 2 :to-have-same-items-as ert-bdd-have-same-items-p)
+(ert-bdd-add-n-fn-matcher 2 :to-match              string-match-p t)
+(ert-bdd-add-n-fn-matcher 2 :to-contain            member t)
 
 (ert-bdd-add-matcher :to-be-close-to
   (lambda (a b tolerance &optional inverse)
