@@ -155,6 +155,9 @@ including one or more calls to `should'."
         (exclusive-b (-difference b a)))
     (not (or exclusive-a exclusive-b))))
 
+(defun ert-bdd-are-close-p (a b tolerance)
+  (< (abs (- a b)) tolerance))
+
 (defmacro ert-bdd-add-matcher (keyword body)
   (declare (indent 1))
   `(setq
@@ -163,12 +166,26 @@ including one or more calls to `should'."
      (list ,keyword ,body)
      ert-bdd-matcher-alist)))
 
+(defun ert-bdd-eval-matcher-arg (arg)
+  (let* ((arg (condition-case nil
+                  (eval (eval arg))
+                (error (condition-case nil
+                           (eval arg)
+                         (error arg)))))
+         (arg (if (listp arg) `(quote ,arg) arg)))
+    arg))
+
 (defun ert-bdd-get-n-fn-matcher (n func arg-list &optional swap)
-  (let ((head `(lambda ,(append arg-list (list '&optional 'inverse))))
-        (ret (list `(if inverse '(should-not (,func ,@arg-list))
-                      '(should (,func ,@arg-list))))))
-    (when (and (= 2 n) swap)
-      (setq ret (append '((setq a (prog1 b (setq b a)))) ret)))
+  (let* ((head `(lambda ,(append arg-list (list '&optional 'inverse))))
+         (real-args ;;( mapcar (lambda (arg)
+          ;;          (thread-last arg
+          ;;            symbol-name
+          ;;            (concat ",")
+          ;;            intern))
+          (if (and (= 2 n) swap) arg-list
+            (reverse arg-list)))
+         (ret `((if inverse `(should-not (,',func ,@(mapcar #'ert-bdd-eval-matcher-arg ',real-args)))
+                  `(should (,',func ,@(mapcar #'ert-bdd-eval-matcher-arg ',real-args)))))))
     (append head ret)))
 
 (defmacro ert-bdd-add-n-fn-matcher (n keyword func &optional swap)
@@ -179,7 +196,14 @@ including one or more calls to `should'."
     `(ert-bdd-add-matcher ,keyword
        ,(ert-bdd-get-n-fn-matcher n func arg-list swap))))
 
-(ert-bdd-get-n-fn-matcher 1 #'identity '(a))
+;;(funcall (cadr (assoc :to-be ert-bdd-matcher-alist)) t t)
+
+(apply (ert-bdd-get-n-fn-matcher 1 #'identity '(a)) '(t))
+(apply (ert-bdd-get-n-fn-matcher 2 #'ert-bdd-have-same-items-p '(a b) t) '((t) (t)))
+
+(let ((foo t))
+  (apply (ert-bdd-get-n-fn-matcher 1 #'identity '(a)) '(t)))
+
 ;; '(lambda ,(append arg-list
 ;;                   (list '&optional 'inverse))
 ;;    (list
@@ -201,20 +225,16 @@ including one or more calls to `should'."
 (ert-bdd-add-n-fn-matcher 2 :to-have-same-items-as ert-bdd-have-same-items-p)
 (ert-bdd-add-n-fn-matcher 2 :to-match              string-match-p t)
 (ert-bdd-add-n-fn-matcher 2 :to-contain            member t)
+(ert-bdd-add-n-fn-matcher 3 :to-be-close-to        ert-bdd-are-close-p)
 
-(ert-bdd-add-matcher :to-be-close-to
-  (lambda (a b tolerance &optional inverse)
-    (if inverse (should-not (< (abs (- a b)) tolerance))
-      (should (< (abs (- a b)) tolerance)))))
+;; (ert-bdd-add-matcher :to-throw
+;;   (lambda (expr &optional inverse)
+;;     (if inverse (signal 'ert-bdd-not-implemented-error ":not :to-throw expr")
+;;       (should-error expr))))
 
-(ert-bdd-add-matcher :to-throw
-  (lambda (expr &optional inverse)
-    (if inverse (signal 'ert-bdd-not-implemented-error ":not :to-throw expr")
-      (should-error expr))))
-
-(when (not (get 'ert-bdd-error 'error-conditions))
-  (define-error 'ert-bdd-error "An error has occurred executing a BDD spec")
-  (define-error 'ert-bdd-not-implemented-error "Not yet implemented" 'ert-bdd-error))
+;; (when (not (get 'ert-bdd-error 'error-conditions))
+;;   (define-error 'ert-bdd-error "An error has occurred executing a BDD spec")
+;;   (define-error 'ert-bdd-not-implemented-error "Not yet implemented" 'ert-bdd-error))
 
 (provide 'ert-bdd)
 ;;; ert-bdd.el ends here
