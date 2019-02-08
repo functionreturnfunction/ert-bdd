@@ -31,17 +31,11 @@
 
 (defconst ert-bdd-description-separator "*")
 
-(defvar ert-bdd-description-stack nil)
-(defvar ert-bdd-before-stack nil)
-(defvar ert-bdd-after-stack nil)
+(defvar-local ert-bdd-description-stack nil)
+(defvar-local ert-bdd-before-stack nil)
+(defvar-local ert-bdd-after-stack nil)
 
 (defvar ert-bdd-matcher-alist nil)
-
-(progn
-  (setq ert-bdd-description-stack nil)
-  (setq ert-bdd-before-stack nil)
-  (setq ert-bdd-after-stack nil)
-  (setq ert-bdd-matcher-alist nil))
 
 (if (functionp 'string-join)
     (defalias 'ert-bdd-string-join 'string-join)
@@ -166,26 +160,12 @@ including one or more calls to `should'."
      (list ,keyword ,body)
      ert-bdd-matcher-alist)))
 
-(defun ert-bdd-eval-matcher-arg (arg)
-  (let* ((arg (condition-case nil
-                  (eval (eval arg))
-                (error (condition-case nil
-                           (eval arg)
-                         (error arg)))))
-         (arg (if (listp arg) `(quote ,arg) arg)))
-    arg))
-
 (defun ert-bdd-get-n-fn-matcher (n func arg-list &optional swap)
   (let* ((head `(lambda ,(append arg-list (list '&optional 'inverse))))
-         (real-args ;;( mapcar (lambda (arg)
-          ;;          (thread-last arg
-          ;;            symbol-name
-          ;;            (concat ",")
-          ;;            intern))
-          (if (and (= 2 n) swap) arg-list
-            (reverse arg-list)))
-         (ret `((if inverse `(should-not (,',func ,@(mapcar #'ert-bdd-eval-matcher-arg ',real-args)))
-                  `(should (,',func ,@(mapcar #'ert-bdd-eval-matcher-arg ',real-args)))))))
+         (real-args
+          (if (and (= 2 n) swap) (reverse arg-list) arg-list))
+         (ret `((if inverse `(should-not (,',func ,@(list ,@real-args)))
+                  `(should (,',func ,@(list ,@real-args)))))))
     (append head ret)))
 
 (defmacro ert-bdd-add-n-fn-matcher (n keyword func &optional swap)
@@ -195,22 +175,6 @@ including one or more calls to `should'."
                         (setq ret (if ret (append ret char-sym) char-sym)))))))
     `(ert-bdd-add-matcher ,keyword
        ,(ert-bdd-get-n-fn-matcher n func arg-list swap))))
-
-;;(funcall (cadr (assoc :to-be ert-bdd-matcher-alist)) t t)
-
-(apply (ert-bdd-get-n-fn-matcher 1 #'identity '(a)) '(t))
-(apply (ert-bdd-get-n-fn-matcher 2 #'ert-bdd-have-same-items-p '(a b) t) '((t) (t)))
-
-(let ((foo t))
-  (apply (ert-bdd-get-n-fn-matcher 1 #'identity '(a)) '(t)))
-
-;; '(lambda ,(append arg-list
-;;                   (list '&optional 'inverse))
-;;    (list
-;;     ,(when (and (= 2 n) swap)
-;;        '(setq a (prog1 b (setq b a))))
-;;     '`(if ',inverse '(should-not (,func ,@arg-list))
-;;         '(should (,func ,@arg-list))))))))
 
 (ert-bdd-add-matcher :not
   (lambda (obj matcher &rest args)
