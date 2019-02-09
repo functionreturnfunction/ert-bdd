@@ -38,18 +38,15 @@
 (defmacro it (fn)
   (ignore))
 
-(defun my-sing (str)
-  (message str))
-
 (describe "hey"
   (describe "ho"
     (describe "let's"
       (describe "go"
-        (it my-sing))))
+        (it message))))
 
   (describe "you"
     (describe "get"
       (describe "offa"
         (describe "my"
           (describe "cloud"
-            (it my-sing)))))))
+            (it message)))))))
