@@ -1,5 +1,9 @@
-* bdd-ert [[https://travis-ci.org/functionreturnfunction/ert-bdd][https://travis-ci.org/functionreturnfunction/ert-bdd.png?branch=master]] [[https://coveralls.io/github/functionreturnfunction/ert-bdd][https://coveralls.io/repos/functionreturnfunction/ert-bdd/badge.svg?branch=master&service=github]]
+#+TITLE: bdd-ert [[https://travis-ci.org/functionreturnfunction/ert-bdd][https://travis-ci.org/functionreturnfunction/ert-bdd.png?branch=master]] [[https://coveralls.io/github/functionreturnfunction/ert-bdd][https://coveralls.io/repos/functionreturnfunction/ert-bdd/badge.svg?branch=master&service=github]]
   BDD macros for `ert'.
+
+** Table of Contents                                                    :TOC:
+  - [[#motivation][Motivation]]
+  - [[#whats-implemented][What's Implemented]]
 
 ** Motivation
    [[https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/ert.el][ert]] works well, is built-in to emacs, and can be run in a CI context with
