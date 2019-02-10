@@ -20,6 +20,19 @@
   (cond
    ((not body) result)
    ((-contains? '(describe it) (car body))
+    ;; (it-nested
+    (append (list (intern (concat (symbol-name (car body)) "-nested")))
+            ;; "should whatever"
+            (list (cadr body))
+            ;; '((:describe "should whatever")
+            ;;   (:describe "the thing" <before and after>))
+            (list suite)
+            ;; (expect t))
+            (cddr body)))
+   ;; TODO: make body of defines a lambda that accepts the current suite
+   ;;       just like `it' forms so that things can be overridden by `setq'
+   ;;       without anything spilling out
+   ((-contains? '(before after) (car body))
     (append (list (intern
                    (concat
                     (symbol-name (car body))
@@ -63,7 +76,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;BEFORE/AFTER;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;BEFORE;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro before-nested (key suite &rest body)
+  (let ((car-suite (car suite)))
+    (cons
+     (plist-put car-suite :before
+                (append (plist-get :before car-suite) body))
+     (cdr suite))))
 
+(defmacro before (key &rest body)
+  (error "`before' must be nested in a `describe' form"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;AFTER;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro after-nested (key suite &rest body)
+  )
+
+(defmacro after (key &rest body)
+  (error "`after' must be nested in a `describe' form"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TEST CODE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,3 +118,12 @@
           (it "cloud"
             (ert-bdd-describe-suite current-suite)))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;BEFORE/AFTER;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(describe "whatevs"
+  (before :each "before")
+  (after :each "after")
+
+  (it "things"
+    (ert-bdd-describe-suite current-suite)))
