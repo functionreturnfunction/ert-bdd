@@ -29,9 +29,6 @@
             (list suite)
             ;; (expect t))
             (cddr body)))
-   ;; TODO: make body of defines a lambda that accepts the current suite
-   ;;       just like `it' forms so that things can be overridden by `setq'
-   ;;       without anything spilling out
    ((-contains? '(before after) (car body))
     (append (list (intern
                    (concat
@@ -45,21 +42,21 @@
 (defmacro describe-nested (str suite &rest body)
   (let ((current-suite (append suite (ert-bdd-make-suite str)))
         ret)
-    `(progn
-       ,@(dolist (item body ret)
-           (setq ret (append
-                      ret
-                      (list (describe-rebuild-body item current-suite))))))))
+    `((lambda (current-suite)
+        ,@(dolist (item body ret)
+            (setq ret (append
+                       ret
+                       (list (describe-rebuild-body item current-suite)))))) ',current-suite)))
 
 (defmacro describe (str &rest body)
   (declare (indent 1))
   (let ((suite (ert-bdd-make-suite str))
         ret)
-    `(progn
-       ,@(dolist (item body ret)
-           (setq ret (append
-                      ret
-                      (list (describe-rebuild-body item suite))))))))
+    `((lambda (current-suite)
+        ,@(dolist (item body ret)
+            (setq ret (append
+                       ret
+                       (list (describe-rebuild-body item suite)))))) ',suite)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;IT;;;;;;;;;;;;;;;;;;;;;;;;
@@ -80,11 +77,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;BEFORE;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro before-nested (key suite &rest body)
-  (let ((car-suite (car suite)))
-    (cons
-     (plist-put car-suite :before
-                (append (plist-get :before car-suite) body))
-     (cdr suite))))
+  (let ((new-key (intern (concat ":before-" (substring (symbol-name key) 1)))))
+    `(setq current-suite ',(append
+                            (-drop-last 1 suite)
+                            (-map (lambda (pl)
+                                    (plist-put pl new-key
+                                               (append (plist-get new-key pl) body)))
+                                  (-take-last 1 suite))))))
 
 (defmacro before (key &rest body)
   (error "`before' must be nested in a `describe' form"))
@@ -93,7 +92,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;AFTER;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro after-nested (key suite &rest body)
-  )
+  (let ((new-key (intern (concat ":after-" (substring (symbol-name key) 1)))))
+    `(setq current-suite ',(append
+                            (-drop-last 1 suite)
+                            (-map (lambda (pl)
+                                    (plist-put pl new-key
+                                               (append (plist-get new-key pl) body)))
+                                  (-take-last 1 suite))))))
 
 (defmacro after (key &rest body)
   (error "`after' must be nested in a `describe' form"))
