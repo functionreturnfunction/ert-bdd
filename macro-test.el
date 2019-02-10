@@ -1,9 +1,17 @@
 ;; -*- lexical-binding: t; -*-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HELPERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ert-bdd-describe-suite (suite)
+  (message (pp suite)))
+
+(defun ert-bdd-make-suite (description)
+  (list (plist-put nil :description description)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;DESCRIBE/IT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;DESCRIBE;;;;;;;;;;;;;;;;;;;;;
@@ -22,7 +30,7 @@
    (t (describe-rebuild-body (car body) suite (append (cdr body) result)))))
 
 (defmacro describe-nested (str suite &rest body)
-  (let ((current-suite (append suite (list (list :description str))))
+  (let ((current-suite (append suite (ert-bdd-make-suite str)))
         ret)
     `(progn
        ,@(dolist (item body ret)
@@ -32,7 +40,7 @@
 
 (defmacro describe (str &rest body)
   (declare (indent 1))
-  (let ((suite (list (list :description str)))
+  (let ((suite (ert-bdd-make-suite str))
         ret)
     `(progn
        ,@(dolist (item body ret)
@@ -44,7 +52,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;IT;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro it-nested (str suite &rest body)
-  (let ((current-suite (append suite (list (list :description str)))))
+  (let ((current-suite (append suite (ert-bdd-make-suite str))))
     `((lambda (current-suite) ,@body) ',current-suite)))
 
 (defmacro it (str &rest body)
@@ -56,11 +64,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HELPERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun describe-suite (suite)
-  (message (pp suite)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TEST CODE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -73,11 +76,12 @@
   (describe "ho"
     (describe "let's"
       (it "go"
-        (describe-suite current-suite))))
+        (ert-bdd-describe-suite current-suite))))
 
   (describe "you"
     (describe "get"
       (describe "offa"
         (describe "my"
           (it "cloud"
-            (describe-suite current-suite)))))))
+            (ert-bdd-describe-suite current-suite)))))))
+
