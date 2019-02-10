@@ -14,13 +14,13 @@
    (t (describe-rebuild-body (car body) suite (append (cdr body) result)))))
 
 (defmacro describe-nested (str suite &rest body)
-  (let* ((str (append suite (list (list :description str))))
-         ret)
+  (let ((current-suite (append suite (list (list :description str))))
+        ret)
     `(progn
        ,@(dolist (item body ret)
            (setq ret (append
                       ret
-                      (list (describe-rebuild-body item str))))))))
+                      (list (describe-rebuild-body item current-suite))))))))
 
 (defmacro describe (str &rest body)
   (declare (indent 1))
@@ -32,24 +32,27 @@
                       ret
                       (list (describe-rebuild-body item suite))))))))
 
-(defmacro it-nested (fn suite)
-  `(,fn ',suite))
+(defmacro it-nested (str suite &rest body)
+  (let ((current-suite (append suite (list (list :description str)))))
+    `((lambda (current-suite) ,@body) ',current-suite)))
 
-(defmacro it (fn)
+(defmacro it (str &rest body)
+  (declare (indent 1))
   (error "`it' must be nested in a `describe' form"))
 
 (defun describe-suite (suite)
-  (message (string-join (--map (plist-get it :description) suite) "*")))
+  (message (pp suite)))
+;;  (message (string-join (--map (plist-get it :description) suite) "*")))
 
 (describe "hey"
   (describe "ho"
     (describe "let's"
-      (describe "go"
-        (it describe-suite))))
+      (it "go"
+        (describe-suite current-suite))))
 
   (describe "you"
     (describe "get"
       (describe "offa"
         (describe "my"
-          (describe "cloud"
-            (it describe-suite)))))))
+          (it "cloud"
+            (describe-suite current-suite)))))))
