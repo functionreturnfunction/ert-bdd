@@ -97,7 +97,7 @@
                             (-drop-last 1 suite)
                             (-map (lambda (pl)
                                     (plist-put pl new-key
-                                               (append (plist-get new-key pl) body)))
+                                               (cons body (plist-get new-key pl))))
                                   (-take-last 1 suite))))))
 
 (defmacro after (key &rest body)
