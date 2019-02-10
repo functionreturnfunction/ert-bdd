@@ -1,5 +1,8 @@
 ;; -*- lexical-binding: t; -*-
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;DESCRIBE;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun describe-rebuild-body (body suite &optional result)
   (cond
    ((not body) result)
@@ -32,6 +35,9 @@
                       ret
                       (list (describe-rebuild-body item suite))))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;IT;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro it-nested (str suite &rest body)
   (let ((current-suite (append suite (list (list :description str)))))
     `((lambda (current-suite) ,@body) ',current-suite)))
@@ -40,10 +46,15 @@
   (declare (indent 1))
   (error "`it' must be nested in a `describe' form"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;*HELPERS*;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun describe-suite (suite)
   (message (pp suite)))
-;;  (message (string-join (--map (plist-get it :description) suite) "*")))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;*TEST CODE*;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (describe "hey"
   (describe "ho"
     (describe "let's"
