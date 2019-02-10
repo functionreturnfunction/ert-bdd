@@ -33,20 +33,23 @@
                       (list (describe-rebuild-body item suite))))))))
 
 (defmacro it-nested (fn suite)
-  `(,fn ,(string-join (--map (plist-get it :description) suite) "*")))
+  `(,fn ',suite))
 
 (defmacro it (fn)
   (error "`it' must be nested in a `describe' form"))
+
+(defun describe-suite (suite)
+  (message (string-join (--map (plist-get it :description) suite) "*")))
 
 (describe "hey"
   (describe "ho"
     (describe "let's"
       (describe "go"
-        (it message))))
+        (it describe-suite))))
 
   (describe "you"
     (describe "get"
       (describe "offa"
         (describe "my"
           (describe "cloud"
-            (it message)))))))
+            (it describe-suite)))))))
