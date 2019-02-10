@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(defun describe-rebuild-body (body current-stack &optional result)
+(defun describe-rebuild-body (body suite &optional result)
   (cond
    ((not body) result)
    ((-contains? '(describe it) (car body))
@@ -9,12 +9,12 @@
                     (symbol-name (car body))
                     "-nested")))
             (list (cadr body))
-            (list current-stack)
+            (list suite)
             (cddr body)))
-   (t (describe-rebuild-body (car body) (append (cdr body) result)))))
+   (t (describe-rebuild-body (car body) suite (append (cdr body) result)))))
 
-(defmacro describe-nested (str current-stack &rest body)
-  (let* ((str (append current-stack (list str)))
+(defmacro describe-nested (str suite &rest body)
+  (let* ((str (append suite (list (list :description str))))
          ret)
     `(progn
        ,@(dolist (item body ret)
@@ -24,19 +24,19 @@
 
 (defmacro describe (str &rest body)
   (declare (indent 1))
-  (let* ((str (list str))
-         ret)
+  (let ((suite (list (list :description str)))
+        ret)
     `(progn
        ,@(dolist (item body ret)
            (setq ret (append
                       ret
-                      (list (describe-rebuild-body item str))))))))
+                      (list (describe-rebuild-body item suite))))))))
 
-(defmacro it-nested (fn current-stack)
-  `(,fn ,(string-join current-stack "*")))
+(defmacro it-nested (fn suite)
+  `(,fn ,(string-join (--map (plist-get it :description) suite) "*")))
 
 (defmacro it (fn)
-  (ignore))
+  (error "`it' must be nested in a `describe' form"))
 
 (describe "hey"
   (describe "ho"
