@@ -62,8 +62,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;IT;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro it-nested (str suite &rest body)
-  (let ((current-suite (append suite (ert-bdd-make-suite str))))
-    `((lambda (current-suite) ,@body) ',current-suite)))
+  (let* ((current-suite (append suite (ert-bdd-make-suite str)))
+         (suite-desc (string-join (-map (lambda (pl) (plist-get pl :description))
+                                        current-suite)
+                                  "*"))
+         (suite-name (intern (replace-regexp-in-string " " "-" suite-desc))))
+    `((lambda (current-suite)
+        (ert-deftest ,suite-name () ,suite-desc
+                     ,@body)) ',current-suite)))
 
 (defmacro it (str &rest body)
   (declare (indent 1))
