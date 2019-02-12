@@ -5,7 +5,7 @@
 ;; Author:  Jason Duncan <jasond496@msn.com>
 ;; Version: 0.0 alpha2
 ;; URL: https://github.com/functionreturnfunction/ert-bdd
-;; Package-Requires: ((emacs "24") (dash "2.15.0"))
+;; Package-Requires: ((emacs "25") (dash "2.15.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(require 'subr-x)
 (require 'ert)
 (require 'dash)
 
