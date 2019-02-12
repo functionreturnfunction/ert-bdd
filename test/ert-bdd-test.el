@@ -6,29 +6,24 @@
 
 ;;; Code:
 
-(ert-delete-all-tests)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HELPER FUNCTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun is-testp (thing)
-  (and (symbolp thing) (get thing 'ert--test)))
-
 (defun get-ert-tests ()
-  (-filter #'is-testp (mapcar #'identity obarray)))
+  (-map #'ert-test-name ert--running-tests))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;API TESTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (describe "describe"
   (it "should create tests with description as prefix and name as suffix"
-    (should (seq-contains (get-ert-tests)
-                          'describe*should-create-tests-with-description-as-prefix-and-name-as-suffix)))
+    (should (-contains? (get-ert-tests)
+                        'describe*should-create-tests-with-description-as-prefix-and-name-as-suffix)))
 
   (describe "when nested"
     (it "should include nested descriptions"
-      (should (seq-contains (get-ert-tests)
-                            'describe*when-nested*should-include-nested-descriptions)))))
+      (should (-contains? (get-ert-tests)
+                          'describe*when-nested*should-include-nested-descriptions)))))
 
 (let (foo)
   (describe "before"
