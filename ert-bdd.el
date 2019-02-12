@@ -105,10 +105,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro it-nested (str suite &rest body)
   (let* ((current-suite (append suite (ert-bdd-make-suite str)))
-
-         (spec-desc (string-join (-map (lambda (pl) (plist-get pl :description))
-                                       current-suite)
-                                 ert-description-separator))
+         (spec-desc (ert-bdd-string-join
+                     (-map (lambda (pl) (plist-get pl :description))
+                           current-suite)
+                     ert-description-separator))
          (spec-name (intern (replace-regexp-in-string " " "-" spec-desc))))
     `((lambda (current-spec)
         (ert-deftest ,spec-name ()
