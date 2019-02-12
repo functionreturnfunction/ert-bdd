@@ -174,30 +174,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;DESCRIBE/IT;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(describe "hey"
-  (describe "ho"
-    (describe "lets"
-      (it "go"
-        (ert-bdd-describe-suite current-suite))))
+;; (describe "hey"
+;;   (describe "ho"
+;;     (describe "lets"
+;;       (it "go"
+;;         (ert-bdd-describe-suite current-suite))))
 
-  (describe "you"
-    (describe "get"
-      (describe "offa"
-        (describe "my"
-          (it "cloud"
-            (ert-bdd-describe-suite current-suite)))))))
+;;   (describe "you"
+;;     (describe "get"
+;;       (describe "offa"
+;;         (describe "my"
+;;           (it "cloud"
+;;             (ert-bdd-describe-suite current-suite)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;BEFORE/AFTER;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(describe "whatevs"
-  (before :each "before")
-  (before :each "before2")
-  (after :each "after")
-  (after :each "after2")
+;; (describe "whatevs"
+;;           (before :each "before")
+;;           (before :each "before2")
+;;           (after :each "after")
+;;           (after :each "after2")
 
-  (it "things"
-    (ert-bdd-describe-suite current-suite)))
+;;           (it "things"
+;;               (ert-bdd-describe-suite current-suite)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EXPECT/MATCHERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
