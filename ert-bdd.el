@@ -108,7 +108,7 @@
          (spec-desc (ert-bdd-string-join
                      (-map (lambda (pl) (plist-get pl :description))
                            current-suite)
-                     ert-description-separator))
+                     ert-bdd-description-separator))
          (spec-name (intern (replace-regexp-in-string " " "-" spec-desc))))
     `((lambda (current-spec)
         (ert-deftest ,spec-name ()
