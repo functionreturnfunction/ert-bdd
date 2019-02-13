@@ -27,7 +27,6 @@
 ;;; Code:
 
 (require 'ert)
-(require 'seq)
 (require 'dash)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,7 +49,7 @@
       doc
       (declare (indent 1))
       (if functions `(ert-bdd-thread-last
-                      ,(seq-concatenate 'list (car functions) (list arg))
+                      ,(append (car functions) (list arg))
                       ,@(cdr functions))
         arg))))
 
