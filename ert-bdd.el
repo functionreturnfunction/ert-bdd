@@ -216,7 +216,7 @@
 
 (defun ert-bdd-expect (arg matcher args)
   (let ((func (ert-bdd-lookup-matcher matcher)))
-    (apply func (cons arg args))))
+    `(,func ,@(cons arg args))))
 
 (defun ert-bdd-have-same-items-p (a b)
   (let ((exclusive-a (-difference a b))
@@ -231,7 +231,7 @@
   `(setq
     ert-bdd-matcher-alist
     (cons
-     (list ,keyword ,body)
+     (list ,keyword ',body)
      ert-bdd-matcher-alist)))
 
 (defun ert-bdd-get-n-fn-matcher (n func arg-list &optional swap)
@@ -253,7 +253,7 @@
 (ert-bdd-add-matcher :not
   (lambda (obj matcher &rest args)
     (let ((func (ert-bdd-lookup-matcher matcher)))
-      (apply func (append (list obj) args (list t))))))
+      `(,func ,@(append (list obj) args (list t))))))
 
 (ert-bdd-add-n-fn-matcher 1 :to-be-truthy          identity)
 (ert-bdd-add-n-fn-matcher 2 :to-be                 eq)
