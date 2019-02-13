@@ -7,4 +7,6 @@
  (depends-on "ert")
  (depends-on "ert-runner")
  (depends-on "git")
- (depends-on "undercover"))
+ (condition-case nil
+     (depends-on "undercover")
+   (error nil)))
