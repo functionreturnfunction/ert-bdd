@@ -5,7 +5,7 @@
 ;; Author:  Jason Duncan <jasond496@msn.com>
 ;; Version: 0.0 alpha2
 ;; URL: https://github.com/functionreturnfunction/ert-bdd
-;; Package-Requires: ((emacs "25") (dash "2.15.0"))
+;; Package-Requires: ((emacs "24") (dash "2.15.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,17 +26,33 @@
 
 ;;; Code:
 
-(require 'subr-x)
 (require 'ert)
+(require 'seq)
 (require 'dash)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SHIMS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(if (functionp 'string-join)
-    (defalias 'ert-bdd-string-join 'string-join)
-  (defun ert-bdd-string-join (list sep)
-    (mapconcat #'identity list sep)))
+(require 'subr-x nil 'noerror)
+
+(let ((doc "Join LIST of strings using SEP as separator."))
+  (if (functionp 'string-join)
+      (defalias 'ert-bdd-string-join 'string-join doc)
+    (defun ert-bdd-string-join (list sep)
+      doc
+      (mapconcat #'identity list sep))))
+
+(let ((doc
+       "Starting with ARG, thread FUNCTIONS elements as the last argument of their successor."))
+  (if (functionp 'thread-last)
+      (defalias 'ert-bdd-thread-last 'thread-last doc)
+    (defmacro ert-bdd-thread-last (arg &rest functions)
+      doc
+      (declare (indent 1))
+      (if functions `(ert-bdd-thread-last
+                      ,(seq-concatenate 'list (car functions) (list arg))
+                      ,@(cdr functions))
+        arg))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;VARIABLES;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,16 +131,18 @@
         (ert-deftest ,spec-name ()
           ,spec-desc
           ,@(append
-             (thread-last current-suite
-               (-map (lambda (pl) (plist-get pl :before-each)))
-               (-filter #'identity)
-               (apply #'append))
+             (ert-bdd-thread-last
+              current-suite
+              (-map (lambda (pl) (plist-get pl :before-each)))
+              (-filter #'identity)
+              (apply #'append))
              body
-             (thread-last current-suite
-               (-map (lambda (pl) (plist-get pl :after-each)))
-               (-filter #'identity)
-               (apply #'append)
-               reverse))))
+             (ert-bdd-thread-last
+              current-suite
+              (-map (lambda (pl) (plist-get pl :after-each)))
+              (-filter #'identity)
+              (apply #'append)
+              (reverse)))))
       ',current-suite)))
 
 (defmacro it (str &rest body)
