@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019 Jason Duncan, all rights reserved
 
 ;; Author:  Jason Duncan <jasond496@msn.com>
-;; Version: 0.0 alpha2
+;; Version: 0.0 alpha3
 ;; URL: https://github.com/functionreturnfunction/ert-bdd
 ;; Package-Requires: ((emacs "24") (dash "2.15.0"))
 
