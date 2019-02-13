@@ -23,7 +23,13 @@
   (describe "when nested"
     (it "should include nested descriptions"
       (should (-contains? (get-ert-tests)
-                          'describe*when-nested*should-include-nested-descriptions)))))
+                          'describe*when-nested*should-include-nested-descriptions))))
+
+  (let (foo)
+    (describe "when nested in another form"
+      (it "should still nest the description"
+        (should (-contains? (get-ert-tests)
+                            'describe*when-nested-in-another-form*should-still-nest-the-description))))))
 
 (let (foo)
   (describe "before"

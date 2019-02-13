@@ -61,9 +61,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HELPERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ert-bdd-describe-suite (suite)
-  (message (pp suite)))
-
 (defun ert-bdd-make-suite (description)
   (list (plist-put nil :description description)))
 
@@ -74,9 +71,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;DESCRIBE;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun describe-rebuild-body (body suite &optional result)
+(defun describe-rebuild-body (body suite)
   (cond
-   ((not body) result)
+   ((not body) nil)
    ((-contains? '(describe it) (car body))
     ;; (it-nested
     (append (list (intern (concat (symbol-name (car body)) "-nested")))
@@ -95,7 +92,11 @@
             (list (cadr body))
             (list suite)
             (cddr body)))
-   (t (describe-rebuild-body (car body) suite (append (cdr body) result)))))
+   ((not (listp (car body)))
+    (cons (car body)
+          (describe-rebuild-body (cdr body) suite)))
+   (t (cons (describe-rebuild-body (car body) suite)
+            (describe-rebuild-body (cdr body) suite)))))
 
 (defmacro describe-nested (str suite &rest body)
   (let ((current-suite (append suite (ert-bdd-make-suite str)))
