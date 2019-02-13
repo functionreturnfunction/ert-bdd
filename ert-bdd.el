@@ -232,9 +232,21 @@
   (or (cadr (assoc matcher ert-bdd-matcher-alist))
       (error "Matcher %s not defined" (symbol-name matcher))))
 
+(defun ert-bdd-expect-to-throw (arg matcher args)
+  (if (eq matcher :not)
+      (error "vOv")
+    (append
+     'should-error
+     (list arg)
+     (when (car args)
+       (list :type (car args))))))
+
 (defun ert-bdd-expect (arg matcher args)
-  (let ((func (ert-bdd-lookup-matcher matcher)))
-    `(,func ,@(cons arg args))))
+  (if (or (eq matcher :to-throw)
+          (and (eq matcher :not) (eq (car args) :to-throw)))
+      (ert-bdd-expect-to-throw arg matcher args)
+    (let ((func (ert-bdd-lookup-matcher matcher)))
+      `(,func ,@(cons arg args)))))
 
 (defun ert-bdd-have-same-items-p (a b)
   (let ((exclusive-a (-difference a b))
