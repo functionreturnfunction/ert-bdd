@@ -256,8 +256,8 @@
   (let* ((head `(lambda ,(append arg-list (list '&optional 'inverse))))
          (real-args
           (if (and (= 2 n) swap) (reverse arg-list) arg-list))
-         (ret `((if inverse `(should-not (,',func ,@(list ,@real-args)))
-                  `(should (,',func ,@(list ,@real-args)))))))
+         (ret `((if inverse (should-not (,func ,@real-args))
+                  (should (,func ,@real-args))))))
     (append head ret)))
 
 (defmacro ert-bdd-add-n-fn-matcher (n keyword func &optional swap)
