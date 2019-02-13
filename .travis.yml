@@ -11,7 +11,7 @@ before_install:
   # install deps for cask
   - EMACS="/home/travis/.evm/bin/emacs" cask install
 env:
-  - EVM_EMACS=emacs-24.2-travis
+  - EVM_EMACS=emacs-24.3-travis
   - EVM_EMACS=emacs-24.5-travis
   - EVM_EMACS=emacs-25.3-travis
   - EVM_EMACS=emacs-26.1-travis
