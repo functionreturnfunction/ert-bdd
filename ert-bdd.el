@@ -236,7 +236,7 @@
   (if (eq matcher :not)
       (error "vOv")
     (append
-     'should-error
+     '(should-error)
      (list arg)
      (when (car args)
        (list :type (car args))))))
