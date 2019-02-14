@@ -129,6 +129,6 @@
         ;;       (expect (/ 1 0) :not :to-throw 'void-variable)
         (expect (+ a 1) :to-throw 'void-variable))
       )))
-  ;;     (it "optionally matches arguments to signals"
-  ;;       (expect (+ a 1) :not :to-throw 'void-variable '(b))
-  ;;       (expect (+ a 1) :to-throw 'void-variable '(a))))))
+;;     (it "optionally matches arguments to signals"
+;;       (expect (+ a 1) :not :to-throw 'void-variable '(b))
+;;       (expect (+ a 1) :to-throw 'void-variable '(a))))))

@@ -120,6 +120,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;IT;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 's Monty Python's Flying Circus...
 (defmacro it-nested (str suite &rest body)
   (let* ((current-suite (append suite (ert-bdd-make-suite str)))
          (spec-desc (ert-bdd-string-join
@@ -186,38 +187,6 @@
   (error "`after' must be nested in a `describe' form"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TEST CODE;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;DESCRIBE/IT;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (describe "hey"
-;;   (describe "ho"
-;;     (describe "lets"
-;;       (it "go"
-;;         (ert-bdd-describe-suite current-suite))))
-
-;;   (describe "you"
-;;     (describe "get"
-;;       (describe "offa"
-;;         (describe "my"
-;;           (it "cloud"
-;;             (ert-bdd-describe-suite current-suite)))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;BEFORE/AFTER;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (describe "whatevs"
-;;           (before :each "before")
-;;           (before :each "before2")
-;;           (after :each "after")
-;;           (after :each "after2")
-
-;;           (it "things"
-;;               (ert-bdd-describe-suite current-suite)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EXPECT/MATCHERS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar ert-bdd-matcher-alist nil)
@@ -232,21 +201,25 @@
   (or (cadr (assoc matcher ert-bdd-matcher-alist))
       (error "Matcher %s not defined" (symbol-name matcher))))
 
-(defun ert-bdd-expect-to-throw (arg matcher args)
-  (if (eq matcher :not)
-      (error "vOv")
-    (append
-     '(should-error)
-     (list arg)
-     (when (car args)
-       (list :type (car args))))))
+(defun ert-bdd-expect-not-to-throw (form args)
+  (error "vOv"))
+
+(defun ert-bdd-expect-to-throw (form args)
+  (let ((error-type (or (car args) 'error)))
+    `(condition-case err
+         (lambda () ,form)
+       (,error-type nil)
+       (error (should (eq (car err) ,error-type))))))
 
 (defun ert-bdd-expect (arg matcher args)
-  (if (or (eq matcher :to-throw)
-          (and (eq matcher :not) (eq (car args) :to-throw)))
-      (ert-bdd-expect-to-throw arg matcher args)
-    (let ((func (ert-bdd-lookup-matcher matcher)))
-      `(,func ,@(cons arg args)))))
+  (cond ((eq matcher :to-throw)
+         (ert-bdd-expect-to-throw arg args))
+        ((and (eq matcher :not)
+              (eq (car args) :to-throw))
+         (ert-bdd-expect-not-to-throw arg (cdr args) t))
+        (t
+         (let ((func (ert-bdd-lookup-matcher matcher)))
+           `(,func ,@(cons arg args))))))
 
 (defun ert-bdd-have-same-items-p (a b)
   (let ((exclusive-a (-difference a b))
