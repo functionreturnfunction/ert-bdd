@@ -123,10 +123,10 @@
 
     (describe "The :to-throw matcher"
       (it "is for testing if an expression throws an exception"
-        ;;       (expect (+ 1 2) :not :to-throw)
+        (expect (+ 1 2) :not :to-throw)
         (expect (+ a 1) :to-throw))
       (it "accepts a symbol to check for the signal thrown"
-        ;;       (expect (/ 1 0) :not :to-throw 'void-variable)
+        (expect (/ 1 0) :not :to-throw 'void-variable)
         (expect (+ a 1) :to-throw 'void-variable))
       )))
 ;;     (it "optionally matches arguments to signals"

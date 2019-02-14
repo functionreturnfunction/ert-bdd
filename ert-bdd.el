@@ -202,7 +202,11 @@
       (error "Matcher %s not defined" (symbol-name matcher))))
 
 (defun ert-bdd-expect-not-to-throw (form args)
-  (error "vOv"))
+  (let ((error-type (or (car args) 'error)))
+    `(condition-case error
+         (lambda () ,form)
+       (,error-type (ert-fail (format "Unexpected %s." (symbol-name (car err)))))
+       (error "vOv"))))
 
 (defun ert-bdd-expect-to-throw (form args)
   (let ((error-type (or (car args) 'error)))
@@ -216,7 +220,7 @@
          (ert-bdd-expect-to-throw arg args))
         ((and (eq matcher :not)
               (eq (car args) :to-throw))
-         (ert-bdd-expect-not-to-throw arg (cdr args) t))
+         (ert-bdd-expect-not-to-throw arg (cdr args) ))
         (t
          (let ((func (ert-bdd-lookup-matcher matcher)))
            `(,func ,@(cons arg args))))))
