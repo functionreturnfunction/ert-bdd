@@ -226,14 +226,17 @@
            `(,func ,@(cons arg args))))))
 
 (defun ert-bdd-have-same-items-p (a b)
+  "Return nil if lists A and B do not contain the same items."
   (let ((exclusive-a (-difference a b))
         (exclusive-b (-difference b a)))
     (not (or exclusive-a exclusive-b))))
 
 (defun ert-bdd-are-close-p (a b tolerance)
+  "Return nil if numbers A and B are not within TOLERANCE of each other."
   (< (abs (- a b)) tolerance))
 
 (defmacro ert-bdd-add-matcher (keyword body)
+  "Add form BODY to `ert-bdd-matcher-alist' under KEYWORD."
   (declare (indent 1))
   `(setq
     ert-bdd-matcher-alist
@@ -260,7 +263,7 @@
 (ert-bdd-add-matcher :not
   (lambda (obj matcher &rest args)
     (let ((func (ert-bdd-lookup-matcher matcher)))
-      `(,func ,@(append (list obj) args (list t))))))
+      (apply func (append (list obj) args (list t))))))
 
 (ert-bdd-add-n-fn-matcher 1 :to-be-truthy          identity)
 (ert-bdd-add-n-fn-matcher 2 :to-be                 eq)
