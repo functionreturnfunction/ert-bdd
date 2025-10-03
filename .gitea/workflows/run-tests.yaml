@@ -32,9 +32,7 @@ jobs:
         run: echo "$HOME/.cask/bin" >> $GITHUB_PATH
       - name: Install Dependencies using Cask
         run: |
-          cask install
+          make install
       - name: Run Tests
-        uses: leotaku/elisp-check@master
-        with:
-          check: ert
-          file: "test/*-test.el"
+        run: |
+          make test
