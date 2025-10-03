@@ -10,7 +10,9 @@ jobs:
       - name: Check Out Source
         uses: actions/checkout@v4
       - name: Install Emacs
-        run: apt-get update && apt-get install -y git emacs-nox
+        uses: jcs090218/setup-emacs@master
+        with:
+          version: 30.2
       - name: Cache Cask Packages
         uses: actions/cache@v4
         id: cache-cask-packages
