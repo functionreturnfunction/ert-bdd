@@ -13,11 +13,28 @@ jobs:
         uses: jcs090218/setup-emacs@master
         with:
           version: 30.2
-      - name: Install dependencies
-        run: |
-          cask install
-      - name: Run Tests
-        uses: leotaku/elisp-check@master
+      - name: Cache Cask Packages
+        uses: actions/cache@v4
+        id: cache-cask-packages
         with:
-          check: ert
-          file: "test/*-test.el"
+          path: .cask
+          key: cache-cask-packages-000
+      - name: Cache Cask Executable
+        uses: actions/cache@v4
+        id: cache-cask-executable
+        with:
+          path: ~/.cask
+          key: cache-cask-executable-000
+      - name: Install Cask
+        uses: cask/setup-cask@master
+        if: steps.cache-cask-executable.outputs.cache-hit != 'true'
+        with:
+          version: snapshot
+      - name: Add Cask to Path
+        run: echo "$HOME/.cask/bin" >> $GITHUB_PATH
+      - name: Install Dependencies using Cask
+        run: |
+          make install
+      - name: Run Tests
+        run: |
+          make test
