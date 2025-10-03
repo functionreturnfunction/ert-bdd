@@ -11,6 +11,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Emacs
         run: apt-get update && apt-get install -y git emacs-nox
+      - name: Install dependencies
+        run: |
+          cask install
       - name: Run Tests
         uses: leotaku/elisp-check@master
         with:
