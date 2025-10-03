@@ -101,7 +101,7 @@
 (defmacro describe-nested (str suite &rest body)
   (let ((current-suite (append suite (ert-bdd-make-suite str)))
         ret)
-    `((lambda (current-suite)
+    `(funcall (lambda (current-suite)
         ,@(dolist (item body ret)
             (setq ret (append
                        ret
@@ -111,7 +111,7 @@
   (declare (indent 1))
   (let ((suite (ert-bdd-make-suite str))
         ret)
-    `((lambda (current-suite)
+    `(funcall (lambda (current-suite)
         ,@(dolist (item body ret)
             (setq ret (append
                        ret
@@ -128,7 +128,7 @@
                            current-suite)
                      ert-bdd-description-separator))
          (spec-name (intern (replace-regexp-in-string " " "-" spec-desc))))
-    `((lambda (current-spec)
+    `(funcall (lambda (current-spec)
         (ert-deftest ,spec-name ()
           ,spec-desc
           ,@(append
@@ -223,7 +223,7 @@
          (ert-bdd-expect-not-to-throw arg (cdr args) ))
         (t
          (let ((func (ert-bdd-lookup-matcher matcher)))
-           `(,func ,@(cons arg args))))))
+           `(funcall ,func ,@(cons arg args))))))
 
 (defun ert-bdd-have-same-items-p (a b)
   "Return nil if lists A and B do not contain the same items."
