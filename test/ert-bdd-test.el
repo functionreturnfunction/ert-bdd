@@ -5,7 +5,8 @@
 ;; Tests for `ert-bdd'.
 
 ;;; Code:
-(require 'ert-bdd (format "%s../ert-bdd" (file-name-directory (buffer-file-name))))
+
+(require 'test-helper (format "%stest-helper" (file-name-directory (buffer-file-name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HELPER FUNCTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

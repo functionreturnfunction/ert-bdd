@@ -1,6 +1,6 @@
 ;;; ert-bdd-failure-test.el --- Tests for `ert-bdd' failure conditions.    -*- lexical-binding: t; -*-
 
-(require 'ert-bdd (format "%s../ert-bdd" (file-name-directory (buffer-file-name))))
+(require 'test-helper (format "%stest-helper" (file-name-directory (buffer-file-name))))
 
 (describe "expect"
   (describe ":not"
